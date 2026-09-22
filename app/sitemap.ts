@@ -1,6 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { siteUrl, tools } from '../lib/tools'
 
+// Required for `output: 'export'` — pre-render this metadata route at build time.
+export const dynamic = 'force-static'
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date()
 

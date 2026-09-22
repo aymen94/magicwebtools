@@ -24,7 +24,11 @@ export function CheckerWorkbench({ tool }: { tool: ToolDefinition }) {
     setError('')
     setResult(null)
     try {
-      const response = await fetch(`/api/checker/${tool.slug}`, {
+      const endpoint = process.env.NEXT_PUBLIC_CHECKER_API
+      if (!endpoint) {
+        throw new Error(dict.checker.error)
+      }
+      const response = await fetch(`${endpoint}/${tool.slug}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),

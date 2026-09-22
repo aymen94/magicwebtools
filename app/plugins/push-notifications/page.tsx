@@ -6,6 +6,7 @@ import { PluginShell } from '../../../components/plugin-shell'
 import { getPlugin } from '../../../lib/plugins'
 
 const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+const subscribeEndpoint = process.env.NEXT_PUBLIC_PUSH_SUBSCRIBE_API
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = '='.repeat((4 - (base64.length % 4)) % 4)
@@ -40,7 +41,9 @@ export default function PushNotificationsPluginPage() {
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(vapidKey),
         })
-        await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(subscription) })
+        if (subscribeEndpoint) {
+          await fetch(subscribeEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(subscription) })
+        }
         setSubscribed(true)
         setStatus('Subscribed to push notifications.')
       } else {
@@ -56,7 +59,9 @@ export default function PushNotificationsPluginPage() {
     const registration = await navigator.serviceWorker.ready
     const subscription = await registration.pushManager.getSubscription()
     if (subscription) {
-      await fetch('/api/push/subscribe', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: subscription.endpoint }) })
+      if (subscribeEndpoint) {
+        await fetch(subscribeEndpoint, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: subscription.endpoint }) })
+      }
       await subscription.unsubscribe()
     }
     setSubscribed(false)

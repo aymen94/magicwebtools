@@ -1,5 +1,8 @@
 import type { MetadataRoute } from 'next'
 
+// Required for `output: 'export'` — pre-render this metadata route at build time.
+export const dynamic = 'force-static'
+
 // PWA plugin: app manifest that makes the whole site installable.
 export default function manifest(): MetadataRoute.Manifest {
   return {
