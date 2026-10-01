@@ -32,6 +32,45 @@ export function isLocale(value: string | undefined | null): value is Locale {
   return !!value && (locales as readonly string[]).includes(value)
 }
 
+// --- URL / routing helpers -------------------------------------------------
+
+// Map an app locale to a BCP-47 value for hreflang / html lang attributes.
+export const hreflangByLocale: Record<Locale, string> = {
+  en: 'en',
+  'zh-CN': 'zh-Hans',
+  es: 'es',
+  'pt-BR': 'pt-BR',
+  fr: 'fr',
+  de: 'de',
+  ja: 'ja',
+  ko: 'ko',
+  it: 'it',
+  ar: 'ar',
+}
+
+// Extract the locale from a pathname like `/fr/tools/foo`. Falls back to the
+// default locale when the first segment is not a supported locale.
+export function localeFromPathname(pathname: string | null | undefined): Locale {
+  if (!pathname) return defaultLocale
+  const segment = pathname.split('/').filter(Boolean)[0]
+  return isLocale(segment) ? segment : defaultLocale
+}
+
+// Prefix a locale-agnostic path (e.g. `/tools/foo`) with a locale.
+// `localePath('fr', '/tools')` -> `/fr/tools`; `localePath('en', '/')` -> `/en`.
+export function localePath(locale: Locale, path = '/'): string {
+  const clean = `/${path}`.replace(/\/{2,}/g, '/').replace(/\/$/, '')
+  return clean ? `/${locale}${clean}` : `/${locale}`
+}
+
+// Strip a leading locale segment from a pathname, returning the locale-agnostic
+// remainder (always starting with `/`). `/fr/tools/foo` -> `/tools/foo`.
+export function stripLocale(pathname: string): string {
+  const parts = pathname.split('/').filter(Boolean)
+  if (parts.length && isLocale(parts[0])) parts.shift()
+  return `/${parts.join('/')}`.replace(/\/$/, '') || '/'
+}
+
 export function getDir(locale: Locale): 'ltr' | 'rtl' {
   return localeMeta[locale].dir
 }

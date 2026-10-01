@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Bell, BellOff, Send } from 'lucide-react'
-import { PluginShell } from '../../../components/plugin-shell'
-import { getPlugin } from '../../../lib/plugins'
+import { Extensionshell } from '../../../../components/extension-shell'
+import { getPlugin } from '../../../../lib/plugins'
 
 const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
 const subscribeEndpoint = process.env.NEXT_PUBLIC_PUSH_SUBSCRIBE_API
@@ -71,14 +71,14 @@ export default function PushNotificationsPluginPage() {
   const sendTest = async () => {
     if (permission !== 'granted') { setStatus('Enable notifications first.'); return }
     const registration = await navigator.serviceWorker.ready
-    await registration.showNotification(title, { body, icon: '/icons/icon.svg', badge: '/icons/icon.svg', data: { url: '/plugins/push-notifications' } })
+    await registration.showNotification(title, { body, icon: '/icons/icon.svg', badge: '/icons/icon.svg', data: { url: '/extensions/push-notifications' } })
     setStatus('Test notification sent.')
   }
 
   const unsupported = permission === 'unsupported'
 
   return (
-    <PluginShell icon={plugin.icon} gradient={plugin.gradient} name={plugin.name} tagline={plugin.description}>
+    <Extensionshell icon={plugin.icon} gradient={plugin.gradient} name={plugin.name} tagline={plugin.description}>
       <div className="plugin-stat-row">
         <div className="plugin-stat"><span>Permission</span><strong>{unsupported ? 'N/A' : permission}</strong></div>
         <div className="plugin-stat"><span>Subscription</span><strong>{subscribed ? 'Active' : 'None'}</strong></div>
@@ -111,6 +111,6 @@ export default function PushNotificationsPluginPage() {
         <Send size={18} />
         <div><strong>Production web push</strong>Generate VAPID keys, set <code>NEXT_PUBLIC_VAPID_PUBLIC_KEY</code>, store subscriptions server-side (the <code>/api/push/subscribe</code> route scaffolds this), and dispatch pushes with the <code>web-push</code> library.</div>
       </div>
-    </PluginShell>
+    </Extensionshell>
   )
 }

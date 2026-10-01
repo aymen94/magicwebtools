@@ -2,19 +2,20 @@
 
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
-import { ThemeToggle } from '../../components/theme-toggle'
-import { LanguageSwitcher } from '../../components/language-switcher'
-import { useTranslations } from '../../components/i18n-provider'
-import { plugins } from '../../lib/plugins'
+import { ThemeToggle } from '../../../components/theme-toggle'
+import { LanguageSwitcher } from '../../../components/language-switcher'
+import { useTranslations, useLocalePath } from '../../../components/i18n-provider'
+import { plugins } from '../../../lib/plugins'
 
 export default function PluginsPage() {
   const { dict } = useTranslations()
+  const lp = useLocalePath()
 
   return (
     <main className="developer-directory">
       <header className="directory-nav shell">
-        <Link className="brand" href="/" aria-label={dict.nav.homeAria}><span>W</span> magicwebtools</Link>
-        <nav className="directory-nav-links" aria-label={dict.nav.mainNav}><Link href="/tools">{dict.common.allTools}</Link></nav>
+        <Link className="brand" href={lp('/')} aria-label={dict.nav.homeAria}><span>W</span> magicwebtools</Link>
+        <nav className="directory-nav-links" aria-label={dict.nav.mainNav}><Link href={lp('/tools')}>{dict.common.allTools}</Link></nav>
         <div className="runtime-status"><span /> {dict.nav.nativePlugins}</div><ThemeToggle /><LanguageSwitcher />
       </header>
 
@@ -30,7 +31,7 @@ export default function PluginsPage() {
       <section className="directory-content shell">
         <div className="plugin-grid">
           {plugins.map((plugin) => (
-            <Link className="plugin-card" href={plugin.route} key={plugin.id}>
+            <Link className="plugin-card" href={lp(plugin.route)} key={plugin.id}>
               <span className="plugin-emoji" style={{ background: plugin.gradient }}>{plugin.icon}</span>
               <h2>{plugin.name}</h2>
               <p>{plugin.description}</p>

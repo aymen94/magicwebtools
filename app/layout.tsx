@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { PwaRegister } from '../components/pwa-register'
-import { I18nProvider } from '../components/i18n-provider'
 import { PageTransition } from '../components/page-transition'
 import { ClickRipple } from '../components/click-ripple'
 import { siteUrl, tools, toolCategories } from '../lib/tools'
+import { defaultLocale, localePath } from '../lib/i18n'
 
 const description = 'magicwebtools is a collection of 900+ fast developer utilities — PDF tools, converters, text tools, generators, hash/encoders, and network checkers. 100% free and 100% privacy safe: all data is stored in your browser. We have no database and collect nothing. Every tool runs locally with no signup and no upload.'
 
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   creator: 'magicwebtools',
   publisher: 'magicwebtools',
   category: 'technology',
-  alternates: { canonical: '/' },
+  alternates: { canonical: localePath(defaultLocale, '/') },
   robots: {
     index: true,
     follow: true,
@@ -63,7 +63,7 @@ function StructuredData() {
       description,
       potentialAction: {
         '@type': 'SearchAction',
-        target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}/tools?q={search_term_string}` },
+        target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}${localePath(defaultLocale, '/tools')}?q={search_term_string}` },
         'query-input': 'required name=search_term_string',
       },
     },
@@ -88,7 +88,7 @@ function StructuredData() {
         '@type': 'ListItem',
         position: index + 1,
         name: tool.name,
-        url: `${siteUrl}${tool.href ?? `/tools/${tool.slug}`}`,
+        url: `${siteUrl}${localePath(defaultLocale, tool.href ?? `/tools/${tool.slug}`)}`,
       })),
     },
   ]
@@ -103,9 +103,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <StructuredData />
         <PwaRegister />
         <ClickRipple />
-        <I18nProvider>
-          <PageTransition>{children}</PageTransition>
-        </I18nProvider>
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   )

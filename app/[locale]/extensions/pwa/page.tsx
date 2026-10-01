@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Download, Wifi, WifiOff } from 'lucide-react'
-import { PluginShell } from '../../../components/plugin-shell'
-import { getPlugin } from '../../../lib/plugins'
+import { Extensionshell } from '../../../../components/extension-shell'
+import { getPlugin } from '../../../../lib/plugins'
 
 type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
@@ -48,7 +48,7 @@ export default function PwaPluginPage() {
   }
 
   return (
-    <PluginShell icon={plugin.icon} gradient={plugin.gradient} name={plugin.name} tagline={plugin.description}>
+    <Extensionshell icon={plugin.icon} gradient={plugin.gradient} name={plugin.name} tagline={plugin.description}>
       <div className="plugin-stat-row">
         <div className="plugin-stat"><span>Service worker</span><strong>{swReady ? 'Active' : '…'}</strong></div>
         <div className="plugin-stat"><span>Install state</span><strong>{installed ? 'Installed' : installable ? 'Ready' : 'Browser'}</strong></div>
@@ -81,6 +81,6 @@ export default function PwaPluginPage() {
         {online ? <Wifi size={18} /> : <WifiOff size={18} />}
         <div><strong>Try it</strong>Install the app, then switch your network off. Cached pages keep loading from the service worker.</div>
       </div>
-    </PluginShell>
+    </Extensionshell>
   )
 }

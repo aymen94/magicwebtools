@@ -14,7 +14,8 @@ import { PdfWorkbench } from './pdf-workbench'
 import { ThemeToggle } from './theme-toggle'
 import { ToolIcon } from './tool-icon'
 import { LanguageSwitcher } from './language-switcher'
-import { useTranslations } from './i18n-provider'
+import { useTranslations, useLocalePath } from './i18n-provider'
+import Link from 'next/link'
 import type { Dictionary } from '../lib/i18n'
 
 // Numeric single-value tools that should use a number input instead of a textarea.
@@ -25,6 +26,7 @@ const imageToolSlugs = new Set(['exif_reader', 'color_picker', 'qr_code_reader',
 
 export function ToolWorkbench({ tool }: { tool: ToolDefinition }) {
   const { dict } = useTranslations()
+  const lp = useLocalePath()
   const tc = (name: string) => dict.categories[name as keyof Dictionary['categories']] ?? name
   const converter = useMemo(() => resolveConverter(tool.slug), [tool.slug])
   const isImageOptimizer = tool.slug === 'image_optimizer'
@@ -41,8 +43,8 @@ export function ToolWorkbench({ tool }: { tool: ToolDefinition }) {
   return (
     <main className="workspace-page">
       <header className="workspace-nav shell">
-        <a href="/" className="brand"><span>W</span> magicwebtools</a>
-        <a href="/tools" className="back-link"><ArrowLeft size={15} /> {dict.common.allTools}</a>
+        <Link href={lp('/')} className="brand"><span>W</span> magicwebtools</Link>
+        <Link href={lp('/tools')} className="back-link"><ArrowLeft size={15} /> {dict.common.allTools}</Link>
         <div className="privacy-pill"><LockKeyhole size={13} /> {isChecker ? dict.checker.runsOnServer : runsLocally ? dict.workbench.runsInBrowser : dict.workbench.originalTool}</div><ThemeToggle /><LanguageSwitcher />
       </header>
       <div className="workspace-shell">

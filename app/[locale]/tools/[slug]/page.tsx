@@ -1,36 +1,47 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { ToolWorkbench } from '../../../components/tool-workbench'
-import { getTool, siteUrl, tools } from '../../../lib/tools'
+import { ToolWorkbench } from '../../../../components/tool-workbench'
+import { getTool, siteUrl, tools } from '../../../../lib/tools'
+import { hreflangByLocale, isLocale, localePath, locales, defaultLocale } from '../../../../lib/i18n'
 
 export function generateStaticParams() {
   return tools.filter((tool) => !tool.href).map((tool) => ({ slug: tool.slug }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params
-  const tool = getTool(slug)
-  if (!tool || tool.href) return {}
+function languageAlternates(path: string) {
+  const languages: Record<string, string> = {}
+  for (const locale of locales) {
+    languages[hreflangByLocale[locale]] = `${siteUrl}${localePath(locale, path)}`
+  }
+  languages['x-default'] = `${siteUrl}${localePath(defaultLocale, path)}`
+  return languages
+}
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params
+  const tool = getTool(slug)
+  if (!tool || tool.href || !isLocale(locale)) return {}
+
+  const path = `/tools/${tool.slug}`
   const title = `${tool.name} — free online tool`
   const description = `${tool.description} Runs privately in your browser with no signup and no upload. Part of magicwebtools' ${tool.category.toLowerCase()}.`
-  const url = `${siteUrl}/tools/${tool.slug}`
+  const url = `${siteUrl}${localePath(locale, path)}`
 
   return {
     title,
     description,
-    alternates: { canonical: `/tools/${tool.slug}` },
+    alternates: { canonical: localePath(locale, path), languages: languageAlternates(path) },
     openGraph: { type: 'website', url, title: `${tool.name} | magicwebtools`, description, siteName: 'magicwebtools' },
     twitter: { card: 'summary_large_image', title: `${tool.name} | magicwebtools`, description },
   }
 }
 
-export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+export default async function ToolPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+  const { locale, slug } = await params
   const tool = getTool(slug)
-  if (!tool || tool.href) notFound()
+  if (!tool || tool.href || !isLocale(locale)) notFound()
 
-  const url = `${siteUrl}/tools/${tool.slug}`
+  const url = `${siteUrl}${localePath(locale, `/tools/${tool.slug}`)}`
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -45,8 +56,8 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     breadcrumb: {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'magicwebtools', item: siteUrl },
-        { '@type': 'ListItem', position: 2, name: 'All tools', item: `${siteUrl}/tools` },
+        { '@type': 'ListItem', position: 1, name: 'magicwebtools', item: `${siteUrl}${localePath(locale, '/')}` },
+        { '@type': 'ListItem', position: 2, name: 'All tools', item: `${siteUrl}${localePath(locale, '/tools')}` },
         { '@type': 'ListItem', position: 3, name: tool.name, item: url },
       ],
     },

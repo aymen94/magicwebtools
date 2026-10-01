@@ -8,13 +8,15 @@ import { runPdfTool, type PdfResult, type PdfValues } from '../lib/pdf-tools'
 import { ThemeToggle } from './theme-toggle'
 import { ToolIcon } from './tool-icon'
 import { LanguageSwitcher } from './language-switcher'
-import { useTranslations } from './i18n-provider'
+import { useTranslations, useLocalePath } from './i18n-provider'
+import Link from 'next/link'
 import type { Dictionary } from '../lib/i18n'
 
 type FieldValue = string | File | File[] | null
 
 export function PdfWorkbench({ tool }: { tool: ToolDefinition }) {
   const { dict } = useTranslations()
+  const lp = useLocalePath()
   const tc = (name: string) => dict.categories[name as keyof Dictionary['categories']] ?? name
   const fields = useMemo(() => getPdfFields(tool.slug), [tool.slug])
   const [values, setValues] = useState<Record<string, FieldValue>>(() => {
@@ -65,8 +67,8 @@ export function PdfWorkbench({ tool }: { tool: ToolDefinition }) {
   return (
     <main className="workspace-page">
       <header className="workspace-nav shell">
-        <a href="/" className="brand"><span>W</span> magicwebtools</a>
-        <a href="/tools" className="back-link"><ArrowLeft size={15} /> {dict.common.allTools}</a>
+        <Link href={lp('/')} className="brand"><span>W</span> magicwebtools</Link>
+        <Link href={lp('/tools')} className="back-link"><ArrowLeft size={15} /> {dict.common.allTools}</Link>
         <div className="privacy-pill"><LockKeyhole size={13} /> {dict.pdf.runsInBrowser}</div><ThemeToggle /><LanguageSwitcher />
       </header>
       <div className="workspace-shell">

@@ -1,14 +1,15 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   defaultLocale,
   getDir,
   getDictionary,
-  isLocale,
+  localePath,
   LOCALE_COOKIE,
   localeMeta,
-  resolveLocale,
+  stripLocale,
   type Dictionary,
   type Locale,
 } from '../lib/i18n'
@@ -22,47 +23,46 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null)
 
-function readCookieLocale(): Locale | null {
-  if (typeof document === 'undefined') return null
-  const match = document.cookie.match(new RegExp(`(?:^|; )${LOCALE_COOKIE}=([^;]+)`))
-  const value = match ? decodeURIComponent(match[1]) : null
-  return isLocale(value) ? value : null
-}
-
 function applyHtmlLang(locale: Locale) {
   if (typeof document === 'undefined') return
   document.documentElement.lang = locale
   document.documentElement.dir = getDir(locale)
 }
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // Start from the default locale so server and first client render match,
-  // then reconcile to the saved/browser locale after mount.
-  const [locale, setLocaleState] = useState<Locale>(defaultLocale)
+export function I18nProvider({
+  children,
+  locale,
+  dir,
+}: {
+  children: React.ReactNode
+  locale: Locale
+  dir: 'ltr' | 'rtl'
+}) {
+  const router = useRouter()
+  const pathname = usePathname()
 
+  // Keep <html lang/dir> and the persisted locale in sync with the active
+  // route locale, which the server layout resolved from the URL.
   useEffect(() => {
-    const saved = readCookieLocale()
-    const initial = saved ?? resolveLocale(typeof navigator !== 'undefined' ? navigator.language : null)
-    if (initial !== locale) setLocaleState(initial)
-    applyHtmlLang(initial)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next)
-    applyHtmlLang(next)
+    applyHtmlLang(locale)
     if (typeof document !== 'undefined') {
       const oneYear = 60 * 60 * 24 * 365
-      document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(next)}; path=/; max-age=${oneYear}; samesite=lax`
+      document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(locale)}; path=/; max-age=${oneYear}; samesite=lax`
     }
-  }, [])
+  }, [locale])
+
+  const setLocale = useCallback((next: Locale) => {
+    // Navigate to the same page under the new locale prefix.
+    const rest = stripLocale(pathname ?? '/')
+    router.push(localePath(next, rest))
+  }, [router, pathname])
 
   const value = useMemo<I18nContextValue>(() => ({
     locale,
     dict: getDictionary(locale),
-    dir: getDir(locale),
+    dir,
     setLocale,
-  }), [locale, setLocale])
+  }), [locale, dir, setLocale])
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
 }
@@ -87,3 +87,9 @@ export function useTranslations() {
 }
 
 export { localeMeta }
+
+// Convenience hook for building locale-aware hrefs inside client components.
+export function useLocalePath() {
+  const { locale } = useI18n()
+  return useCallback((path = '/') => localePath(locale, path), [locale])
+}
